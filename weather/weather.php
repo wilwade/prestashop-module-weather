@@ -61,9 +61,9 @@ class Weather extends Module
      */
     public static function getCachedResult()
     {
-        $row = Db::getInstance()->getRow('SELECT * FROM ' . _DB_PREFIX_ . 'weather_cache WHERE date_created >= DATE_ADD(NOW(), INTERVAL -30 MINUTE) ORDER BY date_created DESC');
+        $row = Db::getInstance()->getRow('SELECT * FROM ' . _DB_PREFIX_ . 'weather_cache WHERE date_created >= DATE_ADD(NOW(), INTERVAL -15 MINUTE) ORDER BY date_created DESC');
         //Remove stale;
-        Db::getInstance()->delete('weather_cache', 'date_created < DATE_ADD(NOW(), INTERVAL -30 MINUTE)');
+        Db::getInstance()->delete('weather_cache', 'date_created < DATE_ADD(NOW(), INTERVAL -15 MINUTE)');
         if ($row && $row['weather']) {
             return unserialize($row['weather']);
         }
@@ -293,6 +293,7 @@ class Weather extends Module
             'type' => 'switch',
             'label' => 'Weather Caching',
             'name' => 'weather_cache',
+            'desc' => $this->l('Refresh weather data only every 15 minutes?'),
             'values' => array(
                 array(
                     'id' => 'weather_cache_on',
@@ -307,7 +308,7 @@ class Weather extends Module
             )
         );
         // Load current value
-        $helper->fields_value['weather_cache'] = isset($config['cache']) && $config['cache'] ? '1' : '0';
+        $helper->fields_value['weather_cache'] = isset($config['cache']) ? ($config['cache'] ? '1' : '0') : '1';
 
         $fields[] = array(
             'type' => 'select',
