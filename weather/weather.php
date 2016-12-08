@@ -78,7 +78,7 @@ class Weather extends Module
     {
         Db::getInstance()->insert('weather_cache', array(
             'zip' => pSQL($zip),
-            'result_json' => psql(serialize($weather)),
+            'weather' => psql(serialize($weather)),
         ));
     }
 
@@ -101,7 +101,7 @@ class Weather extends Module
 		CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'weather_cache` (
 			`id_weather_cache` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 			`zip` VARCHAR(10) NOT NULL,
-			`result_json` TEXT NOT NULL,
+			`weather` TEXT NOT NULL,
 			`date_created` DATETIME NOT NULL DEFAULT now()
 		) ENGINE = ' . _MYSQL_ENGINE_ . ' CHARACTER SET utf8 COLLATE utf8_general_ci;'));
     }
