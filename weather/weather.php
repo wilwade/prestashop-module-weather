@@ -10,7 +10,7 @@ class Weather extends Module
 {
     const CONFIG_KEY = 'WEATHER_CONFIG';
 
-    const LOCATIONS = array(
+    protected $LOCATIONS = array(
         'top' => 'Top',
         'leftColumn' => 'Left Column',
         'rightColumn' => 'Right Column',
@@ -230,7 +230,7 @@ class Weather extends Module
                 }
             }
 
-            $locations = self::LOCATIONS;
+            $locations = $this->LOCATIONS;
             $location = strval(Tools::getValue('weather_location'));
             if (empty($location) || !isset($locations[$location])) {
                 $output[] = $this->displayError($this->l('Invalid display location'));
@@ -333,7 +333,7 @@ class Weather extends Module
         $helper->fields_value['weather_units'] = isset($config['units']) ? $config['units'] : 'Fahrenheit';
 
         $locations = array();
-        foreach (self::LOCATIONS as $lId => $lHuman) {
+        foreach ($this->LOCATIONS as $lId => $lHuman) {
             $locations[] = array('id' => $lId, 'name' => $this->l($lHuman));
         }
         $fields[] = array(
