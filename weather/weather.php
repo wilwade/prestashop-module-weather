@@ -61,9 +61,9 @@ class Weather extends Module
      */
     public static function getCachedResult()
     {
-        $row = Db::getInstance()->getRow('SELECT * FROM ' . _DB_PREFIX_ . 'weather_cache WHERE date_created >= DATE_ADD(NOW(), INTERVAL -15 MINUTE) ORDER BY date_created DESC');
+        $row = Db::getInstance()->getRow('SELECT * FROM ' . _DB_PREFIX_ . 'weather_cache WHERE date_created >= DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -15 MINUTE) ORDER BY date_created DESC');
         //Remove stale;
-        Db::getInstance()->delete('weather_cache', 'date_created < DATE_ADD(NOW(), INTERVAL -15 MINUTE)');
+        Db::getInstance()->delete('weather_cache', 'date_created < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -15 MINUTE)');
         if ($row && $row['weather']) {
             return unserialize($row['weather']);
         }
@@ -102,7 +102,7 @@ class Weather extends Module
 			`id_weather_cache` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 			`zip` VARCHAR(10) NOT NULL,
 			`weather` TEXT NOT NULL,
-			`date_created` DATETIME NOT NULL DEFAULT now()
+			`date_created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 		) ENGINE = ' . _MYSQL_ENGINE_ . ' CHARACTER SET utf8 COLLATE utf8_general_ci;'));
     }
 
