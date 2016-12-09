@@ -102,7 +102,7 @@ class Weather extends Module
 			`id_weather_cache` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 			`zip` VARCHAR(10) NOT NULL,
 			`weather` TEXT NOT NULL,
-			`date_created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+			`date_created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 		) ENGINE = ' . _MYSQL_ENGINE_ . ' CHARACTER SET utf8 COLLATE utf8_general_ci;'));
     }
 
