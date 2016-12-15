@@ -7,7 +7,7 @@ Example PrestaShop Module that shows the weather at a US location to your visito
 1. Copy the weather directory to the PrestaShop 1.6 modules folder
 2. Visit Admin -> Modules and Services
 3. Find Weather and click Install
-4. Configure your zip code, API key, and other options
+4. Configure your API key and other options
 5. Visit Admin -> Positions and based on the location in the configuration position the display as desired
 
 ## Testing

@@ -5,9 +5,20 @@
 <div class="col-xs-12 col-sm-4">
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h3 class="panel-title">{l s='Currently in' mod='weather'} {{$weather->locationName}} {l s='I See' mod='weather'} {{$weather->headline}}</h3>
+            <h3 class="panel-title">{l s='Currently in' mod='weather'} {{$weather->locationName}} {l s='I See' mod='weather'} {{$weather->headline}}
+                <a class="btn btn-primary btn-xs" role="button" data-toggle="collapse" href="#weather_module_zip_form" aria-expanded="false" aria-controls="collapseExample">
+                    Change Location
+                </a>
+            </h3>
         </div>
         <div class="panel-body">
+            <div class="weather-change-zip collapse" id="weather_module_zip_form">
+                <form method="post" action="{$link->getModuleLink('weather', 'zip', [], true)|escape:'html'}">
+                    <label for="weather_zipcode">Your Zipcode</label>
+                    <input id="weather_zipcode" name="zipcode" type="tel" />
+                    <input type="submit" value="Save" />
+                </form>
+            </div>
             <div class="pull-left">
                 <img src="{{$weather->iconUrl}}" alt="{{$weather->description}}" />
             </div>
@@ -27,5 +38,6 @@
                 </dl>
             </div>
         </div>
+
     </div>
 </div>

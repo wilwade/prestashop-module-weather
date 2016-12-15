@@ -56,12 +56,13 @@ class Weather extends Module
     }
 
     /**
-     * Returns the cached json string
-     * @return null|string
+     * Returns the cached Weather Object
+     *
+     * @return null|OpenWeatherMapWeather
      */
-    public static function getCachedResult()
+    public static function getCachedResult($zip)
     {
-        $row = Db::getInstance()->getRow('SELECT * FROM ' . _DB_PREFIX_ . 'weather_cache WHERE date_created >= DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -15 MINUTE) ORDER BY date_created DESC');
+        $row = Db::getInstance()->getRow('SELECT * FROM ' . _DB_PREFIX_ . 'weather_cache WHERE date_created >= DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -15 MINUTE) AND zip = ? ORDER BY date_created DESC', $zip);
         //Remove stale;
         Db::getInstance()->delete('weather_cache', 'date_created < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL -15 MINUTE)');
         if ($row && $row['weather']) {
@@ -107,24 +108,38 @@ class Weather extends Module
     }
 
     /**
+     * @return string|null
+     */
+    protected function _getZipcode()
+    {
+        global $cookie;
+        if (isset($cookie->weather_module_zipcode) && $cookie->weather_module_zipcode) {
+            return $cookie->weather_module_zipcode;
+        }
+    }
+
+    /**
      *
-     * @param $config
+     * @param array $config
      * @return null|OpenWeatherMapWeather
      */
     protected function _getWeather($config)
     {
-        if (!isset($config['zip'], $config['key']) || !$config['zip']) {
+        $zip = $this->_getZipcode();
+
+        if (!$zip) {
             return null;
         }
+
         $weather = null;
         if (isset($config['cache']) && $config['cache']) {
-            $weather = self::getCachedResult($config['zip']);
+            $weather = self::getCachedResult($zip);
         }
         if (!$weather) {
-            $owm = new OpenWeatherMap($config['key']);
-            $weather = $owm->getWeather($config['zip']);
+            $owm = new OpenWeatherMap($config['key'], $config['units']);
+            $weather = $owm->getWeather($zip);
             if ($weather && isset($config['cache']) && $config['cache']) {
-                self::cacheResult($config['zip'], $weather);
+                self::cacheResult($zip, $weather);
             }
         }
         return $weather;
@@ -134,7 +149,14 @@ class Weather extends Module
     {
         $config = self::getConfig();
 
+        if (!isset($config['key'])) {
+            return null;
+        }
+
         if (isset($config['location']) && $location === $config['location']) {
+            //Set previous URL for redirect after changing the cookie zip.
+            global $cookie;
+            $cookie->weather_module_return_url = $_SERVER['REQUEST_URI'];
             if ($weather = $this->_getWeather($config)) {
                 $this->context->smarty->assign(
                     array(
@@ -142,6 +164,8 @@ class Weather extends Module
                     )
                 );
                 return $this->display(__FILE__, 'weather_tall.tpl');
+            } else {
+                return $this->display(__FILE__, 'weather_form.tpl');
             }
         }
     }
@@ -204,15 +228,6 @@ class Weather extends Module
 
             $validateWeather = true;
 
-            $zip = strval(Tools::getValue('weather_zip'));
-            if (empty($zip) || !Validate::isZipCodeFormat($zip)) {
-                $output[] = $this->displayError($this->l('Invalid zip code'));
-                $validateWeather = false;
-            } else if (!isset($config['zip']) || $zip !== $config['zip']) {
-                self::setConfig('zip', $zip);
-                $output[] = $this->displayConfirmation($this->l('Weather zip code updated'));
-            }
-
             $key = strval(Tools::getValue('weather_key'));
             if (empty($key) || !Validate::isString($key)) {
                 $output[] = $this->displayError($this->l('Invalid API key'));
@@ -223,7 +238,8 @@ class Weather extends Module
             }
 
             if ($validateWeather) {
-                $weatherCheck = OpenWeatherMap::validate($key, $zip);
+                // 20500 = The White House
+                $weatherCheck = OpenWeatherMap::validate($key, '20500');
                 if ($weatherCheck !== true) {
                     $msg = $this->l('Invalid API key or zip code. Unable to retrieve forecast.');
                     $output[] = $this->displayError($weatherCheck === false ? $msg : $weatherCheck);
@@ -241,6 +257,14 @@ class Weather extends Module
                 self::setConfig('location', $location);
                 $this->registerHook($location);
                 $output[] = $this->displayConfirmation($this->l('Weather display location updated'));
+            }
+
+            $unit = strval(Tools::getValue('weather_units'));
+            if (empty($unit) || !Validate::isString($unit)) {
+                $output[] = $this->displayError($this->l('Invalid temperature unit'));
+            } else if (!isset($config['units']) || $unit !== $config['units']) {
+                self::setConfig('units', $unit);
+                $output[] = $this->displayConfirmation($this->l('Temperature unit updated'));
             }
 
             $cache = strval(Tools::getValue('weather_cache'));
@@ -268,16 +292,6 @@ class Weather extends Module
 
         // Init Fields form array
         $fields = [];
-
-        $fields[] = array(
-            'type' => 'text',
-            'label' => $this->l('US Zip Code'),
-            'name' => 'weather_zip',
-            'maxlen' => 8, // Yes, there are strange zipcodes out there with more than 5
-            'required' => true,
-        );
-        // Load current value
-        $helper->fields_value['weather_zip'] = isset($config['zip']) ? $config['zip'] : '';
 
         $fields[] = array(
             'type' => 'text',
