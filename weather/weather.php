@@ -161,10 +161,16 @@ class Weather extends Module
                 $this->context->smarty->assign(
                     array(
                         'weather' => $weather,
+                        'zip_error' => isset($cookie->weather_module_zipcode_error) ? $cookie->weather_module_zipcode_error : null,
                     )
                 );
                 return $this->display(__FILE__, 'weather_tall.tpl');
             } else {
+                $this->context->smarty->assign(
+                    array(
+                        'zip_error' => isset($cookie->weather_module_zipcode_error) ? $cookie->weather_module_zipcode_error : null,
+                    )
+                );
                 return $this->display(__FILE__, 'weather_form.tpl');
             }
         }
@@ -297,7 +303,7 @@ class Weather extends Module
             'type' => 'text',
             'label' => $this->l('OpenWeatherMap API Key'),
             'name' => 'weather_key',
-            'desc' => $this->l('Visit http://openweathermap.org and signup and receive your free key. With caching enabled, you will never exceed the free tier limits.'),
+            'desc' => $this->l('Visit http://openweathermap.org and signup and receive your free key.'),
             'required' => true,
         );
         // Load current value

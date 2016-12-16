@@ -9,7 +9,7 @@ class WeatherZipModuleFrontController extends ModuleFrontController
         if ($zip) {
             $zip = filter_var(trim($zip), FILTER_SANITIZE_STRING);
             if (empty($zip) || !Validate::isZipCodeFormat($zip)) {
-                $cookie->weather_module_zipcode_error = $this->l('Invalid zip code');
+                $cookie->weather_module_zipcode_error = 'Invalid zip code';
             } else {
                 $cookie->weather_module_zipcode = $zip;
             }
